@@ -1,0 +1,129 @@
+Tasks not to forget before release:
+
+- Update ABOUT-NLS and doc/matrix.texi with information from the Translation
+  Project, by running run.sh in gettext-runtime/doc/Admin/.
+
+- Update gettext-runtime/intl/locale.alias from glibc's intl/locale.alias.
+- Update gettext-runtime/intl/{localcharset.h,localcharset.c,config.charset}
+  from libcharset inside libiconv.
+  Check that gnulib/lib/{localcharset.h,localcharset.c,config.charset}
+  agrees with it, except for copyright header changes.
+
+- Update Origin version in
+    gettext-runtime/po/Makefile.in.in
+  if this file has changed since the last release.
+
+- Update the version numbers in
+    gettext-runtime/m4/po.m4
+    gettext-runtime/po/Makefile.in.in
+    gettext-runtime/intl/libgnuintl.in.h
+    gettext-tools/libgettextpo/gettext-po.in.h
+
+- Update -version-info arguments in gettext-runtime/intl/Makefile.in
+  and in gettext-tools/libgettextpo/Makefile.am.
+  * increment LTV_REVISION,
+  * if any functions/classes have been added, removed or changed, increment
+    LTV_CURRENT and set LTV_REVISION to 0,
+  * if any functions/classes have been added, increment LTV_AGE,
+  * if backwards compatibility has been broken, set LTV_AGE to 0.
+
+- Bump po-mode-version-string in gettext-tools/misc/po-mode.el.
+
+- Verify that the C files generated from *.y files contain no absolute
+  filenames.
+
+- Update djgpp/*.
+
+- Update gettext-tools/examples/*/LINGUAS and the file list in
+  gettext-tools/examples/Makefile.am. Also
+  "cd gettext-tools/examples/po; make update-po".
+
+- Update
+    NEWS
+    gettext-runtime/libasprintf/NEWS
+    gettext-runtime/NEWS
+
+- Iterate:
+    ./rerun-autogen
+    ./rerun-configure
+    make distcheck-hook
+    ./rerun-make
+    make distcheck
+    Test tarball on various platforms.
+    Put fixes into gettext and gnulib.
+    make distclean
+  until it builds and installs fine on the said platforms.
+
+- Commit all the files in gnulib.
+
+- Update git submodules.
+  git submodule foreach git pull origin master
+
+- Add an entry to all the ChangeLogs
+  except gettext-tools/examples/hello-c++-kde/admin/ChangeLog.
+
+- Update translations from the Translation Project
+
+  rsync -Lrtvz translationproject.org::tp/latest/gettext-runtime/ \
+  	gettext-runtime/po
+  rsync -Lrtvz translationproject.org::tp/latest/gettext-tools/ \
+  	gettext-tools/po
+  rsync -Lrtvz translationproject.org::tp/latest/gettext-examples/ \
+  	gettext-tools/examples/po
+
+  Adjust LINGUAS files if any of the languages has been added or
+  removed since the last release.  Commit the changes.  Please do NOT
+  commit regenerated PO files after "make dist".
+
+- Tag the repository (don't push it to the remote repository yet).
+  git tag -m 'gettext 0.19 release' v0.19
+
+- "make"; "make dist"; "make distcheck"
+- cd gettext-tools/misc
+  cp archive.dir.tar.gz-<last-release-number> archive.dir.tar.gz
+  ./add-to-archive /somewhere/gettext-0.xx.yy.tar.gz
+  Then update the case statement in autopoint.in.  Also, update
+  required_gettext_version in gettext-tools/tests/autopoint-[23].
+- regenerate POT and PO files with the built tools
+  PATH="$PWD/gettext-tools/src:$PWD/gettext-tools/misc:$PATH" \
+  gettext_datadir="$PWD/gettext-tools/misc" \
+  make maintainer-update-po
+- again: "make dist"
+
+- Upload gettext-0.xx.yy.tar.{gz,xz} to ftp.gnu.org, according to the
+  procedure given by Bradley M. Kuhn on 2003-11-11
+  http://www.gnu.org/prep/maintain/maintain.html#Automated-Upload-Procedure,
+  or using the gnupload script in gnulib.
+  gnulib/build-aux/gnupload --to ftp.gnu.org:gettext gettext-0.xx.yy.tar.{gz,xz}
+
+- Upload archive.dir.tar.xz to alpha.gnu.org.
+  xz gettext-tools/misc/archive.dir.tar
+  cp gettext-tools/misc/archive.dir.tar.xz archive.dir-0.xx.yy.tar.xz
+  gnulib/build-aux/gnupload --to alpha.gnu.org:gettext \
+                            --symlink-regex archive.dir-0.xx.yy.tar.xz
+
+- Push tag to the repository.
+  git push --tags
+
+- Update the homepage on www.gnu.org:
+  - Bump the version number in gettext.html.
+  - Update FAQ.html from gettext-tools/doc/FAQ.html.
+
+- Regenerate the documentation for www.gnu.org:
+  - Run the update.sh script, or
+  - Do this:
+    - In the gettext-tools/doc/ directory, copy the
+      gendocs.sh and gendocs_template files and run
+        $ cp -p ../../gettext-runtime/doc/*.texi .
+        $ LC_ALL=C ./gendocs.sh --email bug-gnu-gettext gettext "GNU gettext"
+    - In the gettext-runtime/libasprintf/ directory, copy the
+      gendocs.sh and gendocs_template files and run
+        $ LC_ALL=C ./gendocs.sh --email bug-gnu-gettext autosprintf "GNU autosprintf"
+    Copy the resulting manual/ directories.
+  Commit the resulting manual/ directories in CVS, and for every removed HTML
+  file (that corresponds to a deleted node) add a line to the .symlinks file
+  in the same directory.
+
+- Submit a News entry on https://savannah.gnu.org/projects/gettext/
+
+- Announce on info-gnu
